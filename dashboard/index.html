@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Dashboard monitoring kesuburan tanah dari sensor ESP32." />
+  <title>Soil Monitoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten utama</a>
+
+  <header class="topbar" id="top">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 4C10 4 4 10 4 20c10 0 16-6 16-16Z" />
+            <path d="M4 20 14 10" />
+          </svg>
+        </span>
+        <div class="brand-text">
+          <h1>Soil Monitoring</h1>
+          <p class="brand-sub" id="deviceId">Menunggu perangkat</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <p class="status" id="statusPill" data-state="idle">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="statusText">Menunggu data</span>
+        </p>
+        <span class="meta-divider" aria-hidden="true"></span>
+        <div class="last-update">
+          <span class="last-update-label">Diperbarui</span>
+          <span class="last-update-value" id="lastUpdate">-</span>
+        </div>
+        <button class="btn btn-primary" id="refreshBtn" type="button">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+            <path d="M20 4v7h-7" />
+          </svg>
+          Perbarui
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Navigasi bagian dashboard">
+    <div class="tabs-inner">
+      <a href="#ringkasan">Ringkasan</a>
+      <a href="#monitoring">Monitoring</a>
+      <a href="#rekomendasi">Rekomendasi</a>
+      <a href="#riwayat">Riwayat</a>
+    </div>
+  </nav>
+
+  <main id="main">
+    <div class="alert" id="errorAlert" role="alert" hidden>
+      <div class="alert-body">
+        <p class="alert-title">Gagal memuat data.</p>
+        <p class="alert-text">Periksa koneksi ke Cloud Node, lalu coba lagi.</p>
+      </div>
+      <button class="btn btn-primary" id="retryBtn" type="button">Coba Lagi</button>
+    </div>
+
+    <section class="block" id="ringkasan" aria-labelledby="ringkasanTitle">
+      <div class="block-head">
+        <h2 class="section-title" id="ringkasanTitle">Kondisi Tanah Saat Ini</h2>
+        <p class="section-sub">Nilai terbaru dari perangkat sensor.</p>
+      </div>
+
+      <div class="cards" id="sensorCards">
+        <article class="card" data-param="nitrogen">
+          <div class="card-top">
+            <span class="card-label">N (Nitrogen)</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 4C10 4 4 10 4 20c10 0 16-6 16-16Z" />
+                <path d="M4 20 14 10" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value" id="val-nitrogen">--</span><span class="unit">mg/kg</span></p>
+          <p class="card-meta" id="meta-nitrogen">Memuat data...</p>
+        </article>
+
+        <article class="card" data-param="phosphorus">
+          <div class="card-top">
+            <span class="card-label">P (Phosphorus)</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="18" r="2.2" />
+                <circle cx="18" cy="18" r="2.2" />
+                <circle cx="12" cy="6" r="2.2" />
+                <path d="M12 8.2 7.4 16M12 8.2l4.6 7.8" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value" id="val-phosphorus">--</span><span class="unit">mg/kg</span></p>
+          <p class="card-meta" id="meta-phosphorus">Memuat data...</p>
+        </article>
+
+        <article class="card" data-param="potassium">
+          <div class="card-top">
+            <span class="card-label">K (Potassium)</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21v-7" />
+                <path d="M12 14c0-4-3-6-7-6 0 4 3 6 7 6Z" />
+                <path d="M12 14c0-4 3-6 7-6 0 4-3 6-7 6Z" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value" id="val-potassium">--</span><span class="unit">mg/kg</span></p>
+          <p class="card-meta" id="meta-potassium">Memuat data...</p>
+        </article>
+
+        <article class="card" data-param="ph">
+          <div class="card-top">
+            <span class="card-label">pH Tanah</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 3h6" />
+                <path d="M10 3v6l-4 8a2 2 0 0 0 2 3h8a2 2 0 0 0 2-3l-4-8V3" />
+                <path d="M7 15h10" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value" id="val-ph">--</span><span class="unit">pH</span></p>
+          <p class="card-meta" id="meta-ph">Memuat data...</p>
+        </article>
+
+        <article class="card" data-param="temperature">
+          <div class="card-top">
+            <span class="card-label">Suhu Tanah</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0Z" />
+                <path d="M12 9v6" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value" id="val-temperature">--</span><span class="unit">°C</span></p>
+          <p class="card-meta" id="meta-temperature">Memuat data...</p>
+        </article>
+
+        <article class="card" data-param="moisture">
+          <div class="card-top">
+            <span class="card-label">Kelembapan Tanah</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3c4 4 6 7 6 10a6 6 0 0 1-12 0c0-3 2-6 6-10Z" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value" id="val-moisture">--</span><span class="unit">%</span></p>
+          <p class="card-meta" id="meta-moisture">Memuat data...</p>
+        </article>
+
+        <article class="card" data-param="ec">
+          <div class="card-top">
+            <span class="card-label">EC Tanah</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12c3-6 6-6 9 0s6 6 9 0" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value" id="val-ec">--</span><span class="unit">mS/cm</span></p>
+          <p class="card-meta" id="meta-ec">Memuat data...</p>
+        </article>
+
+        <article class="card card-fertility" data-param="fertility" id="fertilityCard">
+          <div class="card-top">
+            <span class="card-label">Tingkat Kesuburan</span>
+            <span class="card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 18a8 8 0 0 1 16 0" />
+                <path d="M12 18 16 11" />
+                <path d="M4 18h16" />
+              </svg>
+            </span>
+          </div>
+          <p class="card-value"><span class="value value-status" id="val-fertility">--</span></p>
+          <p class="card-meta" id="meta-fertility">Memuat data...</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="split" id="monitoring" aria-labelledby="chartTitle">
+      <div class="panel chart-panel">
+        <div class="panel-head">
+          <h2 class="section-title" id="chartTitle">Monitoring Parameter Nutrisi</h2>
+          <p class="section-sub">Perubahan nilai N, P, dan K berdasarkan waktu.</p>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="nutrientChart" role="img" aria-label="Grafik garis nilai Nitrogen, Phosphorus, dan Potassium berdasarkan waktu"></canvas>
+          <p class="chart-note" id="chartNote">Memuat data...</p>
+        </div>
+      </div>
+
+      <aside class="panel rec-panel" id="rekomendasi" aria-labelledby="recTitle">
+        <h2 class="section-title" id="recTitle">Rekomendasi</h2>
+        <div class="fertility-box" id="fertilityBox" data-level="idle">
+          <span class="fertility-label">Tingkat Kesuburan</span>
+          <strong class="fertility-value" id="fertilityValue">--</strong>
+        </div>
+        <ul class="scale" id="fertilityScale" aria-label="Skala tingkat kesuburan">
+          <li data-level="low">Rendah</li>
+          <li data-level="mid">Sedang</li>
+          <li data-level="high">Tinggi</li>
+        </ul>
+        <p class="rec-text" id="recText">Menunggu data pengukuran.</p>
+      </aside>
+    </section>
+
+    <section class="panel history-panel" id="riwayat" aria-labelledby="riwayatTitle">
+      <div class="panel-head">
+        <h2 class="section-title" id="riwayatTitle">Riwayat Pengukuran</h2>
+        <p class="section-sub">Data historis terbaru, terurut dari yang paling baru.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <caption class="sr-only">Riwayat pengukuran sensor tanah</caption>
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Waktu</th>
+              <th scope="col">pH</th>
+              <th scope="col">Suhu</th>
+              <th scope="col">Kelembapan</th>
+              <th scope="col">N</th>
+              <th scope="col">P</th>
+              <th scope="col">K</th>
+              <th scope="col">EC</th>
+              <th scope="col">Kesuburan</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+        <p class="table-note" id="historyNote">Memuat data...</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>Sumber data: Soil Cloud API. Diperbarui otomatis setiap 30 detik.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
