@@ -26,7 +26,6 @@
   var TICK_COLOR = "#5E6B63";
 
   var els = {
-    deviceId: document.getElementById("deviceId"),
     statusPill: document.getElementById("statusPill"),
     statusText: document.getElementById("statusText"),
     lastUpdate: document.getElementById("lastUpdate"),
@@ -166,14 +165,11 @@
 
   function renderStatus(latest) {
     if (!latest) {
-      els.deviceId.textContent = "Perangkat belum terhubung";
       els.statusPill.dataset.state = "idle";
       els.statusText.textContent = "Menunggu data";
       els.lastUpdate.textContent = "-";
       return;
     }
-
-    els.deviceId.textContent = latest.device_id ? String(latest.device_id) : "Perangkat tidak dikenal";
 
     var date = parseTimestamp(latest.timestamp);
     var age = date ? Date.now() - date.getTime() : Infinity;
@@ -349,7 +345,6 @@
       var tr = document.createElement("tr");
 
       var cells = [
-        { text: row.id !== undefined && row.id !== null ? String(row.id) : "-" },
         { text: formatStamp(parseTimestamp(row.timestamp)) },
         { text: formatValue(row.ph, 1) },
         { text: formatValue(row.temperature, 1) },

@@ -37,7 +37,6 @@ app.get("/", (req, res) => {
 app.post("/api/soil", authenticateApiKey, async (req, res) => {
   try {
     const {
-      device_id,
       timestamp,
       ph,
       temperature,
@@ -52,7 +51,6 @@ app.post("/api/soil", authenticateApiKey, async (req, res) => {
 
     // Validasi field wajib
     if (
-      !device_id ||
       !timestamp ||
       ph === undefined ||
       temperature === undefined ||
@@ -94,16 +92,15 @@ app.post("/api/soil", authenticateApiKey, async (req, res) => {
       .from("soil_measurements")
       .insert([
         {
-          device_id,
           timestamp,
-          ph,
-          temperature,
-          moisture,
-          nitrogen,
-          phosphorus,
-          potassium,
-          ec,
-          classification,
+          pH: ph,
+          Temp: temperature,
+          Hum: moisture,
+          N: nitrogen,
+          P: phosphorus,
+          K: potassium,
+          EC: ec,
+          ai_label: classification,
           recommendation
         }
       ])
@@ -135,13 +132,16 @@ app.post("/api/soil", authenticateApiKey, async (req, res) => {
   }
 });
 
+const SOIL_SELECT =
+  "timestamp,ph:pH,temperature:Temp,moisture:Hum,nitrogen:N,phosphorus:P,potassium:K,ec:EC,classification:ai_label,recommendation";
+
 app.get("/api/soil/latest", async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("soil_measurements")
-      .select("*")
+      .select(SOIL_SELECT)
       .order("timestamp", { ascending: false })
-      .limit(100);
+      .limit(40);
 
     if (error) {
       console.error("Supabase error:", error);
@@ -173,7 +173,7 @@ app.get("/api/soil", authenticateApiKey, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("soil_measurements")
-      .select("*")
+      .select(SOIL_SELECT)
       .order("timestamp", { ascending: false });
 
     if (error) {
