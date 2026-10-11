@@ -8,7 +8,7 @@ require("dotenv").config();
 const app = express();
 
 app.use(express.json());
-app.use("/dashboard", express.static(path.join(__dirname, "dashboard")));
+app.use("/dashboard", express.static(path.join(__dirname, "public", "dashboard")));
 const authenticateApiKey = (req, res, next) => {
   const apiKey = req.headers["x-api-key"];
 
@@ -204,11 +204,15 @@ app.get("/api/soil", authenticateApiKey, async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-const httpsOptions = {
-  key: fs.readFileSync("./certs/server.key"),
-  cert: fs.readFileSync("./certs/server.crt")
-};
+if (require.main === module) {
+  const httpsOptions = {
+    key: fs.readFileSync("./certs/server.key"),
+    cert: fs.readFileSync("./certs/server.crt")
+  };
 
-https.createServer(httpsOptions, app).listen(PORT, () => {
-  console.log(`HTTPS server running on https://localhost:${PORT}`);
-});
+  https.createServer(httpsOptions, app).listen(PORT, () => {
+    console.log(`HTTPS server running on https://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
